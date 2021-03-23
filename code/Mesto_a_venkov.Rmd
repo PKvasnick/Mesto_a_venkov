@@ -81,4 +81,41 @@ Všechno podle bydliště
 - Prečo bývate tam kde bývate podľa spokojnosti
 - Dojazd k lekárovi
 - Čo je dostupné v závislosti 
--
+
+## Nechceš zlúčiť Okolí města a venkov?
+
+## Proč bydlíte, kde bydlíte
+Hlavní důvod pro bydlení v současném bydlišti
+
+```{r}
+Mesto_a_venkov %>% 
+  select(
+    Datum_a_cas,
+    Bydliste,
+    Spokojenost...7,
+    Proc_bydlite_zde
+  ) %>%
+  mutate(
+    present = 1
+  ) %>%
+  pivot_wider(
+    names_from = Proc_bydlite_zde,
+    values_from = present,
+    values_fill = 0
+  ) %>%
+  group_by(Bydliste) %>%
+  summarise(
+    Dostupnost = sum(`Dobrá dostupnost`),
+    Rodina = sum(Rodina),
+    Bydleni = sum(`Dům`),
+    Prostredi = sum(`Prostředí`),
+    Neuvedeno = sum(Neuvedeno),
+    Celkem = n()
+  ) -> duvody_bydleni
+Mesto_a_venkov %>%
+  ggplot(mapping = aes(x = Proc_bydlite_zde, fill = Spokojenost...7 )) +
+  facet_grid(Bydliste~.) +
+  geom_bar()
+
+
+```
