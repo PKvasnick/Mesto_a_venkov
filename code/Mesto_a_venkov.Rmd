@@ -1,0 +1,84 @@
+---
+title: "Mesto_a_venkov"
+author: "Lucia Kvasnickova"
+date: "3/23/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libs, echo = FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## R Markdown
+}
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r import echo=FALSE}
+Mesto_a_venkov <- read_excel("C:/Users/kvasn/Documents/Lucia/Dotaznik/Mesto_a_venkov.xlsx", 
+    col_types = c("date", "skip", "text", 
+        "text", "text", "text", "text", "text", 
+        "text", "skip", "skip", "text", "text", 
+        "text", "text", "text", "text", "text", 
+        "text", "text", "text", "text", "numeric", 
+        "text", "numeric", "text", "text", 
+        "text", "text", "skip", "text", "text", 
+        "skip", "skip", "text", "text", "text", 
+        "text", "text", "text", "text", "text", 
+        "text", "text", "text", "text", "text"))
+Mesto_a_venkov
+```
+
+## Sumární statistika
+
+```{r summary, echo=FALSE}
+summary(Mesto_a_venkov)
+````
+
+```{r}
+ggplot(data = Mesto_a_venkov, mapping = aes(x=Pohlavi))+
+  geom_bar()
+```
+
+```{r}
+ggplot(data = Mesto_a_venkov, mapping = aes(x=Vek))+
+  geom_bar()
+```
+
+```{r}
+Mesto_a_venkov %>% 
+  select(Bydliste, Spokojenost...8) %>%
+  group_by(Bydliste) %>%
+  summarise(
+    Celkem = n(),
+    Nespokojen = sum(Spokojenost...8 == "Ne"),
+    Nespokojenost_perc = Nespokojen/Celkem*100,
+    Chyba_perc = sqrt(Nespokojenost_perc/100 * (1-Nespokojenost_perc/100)/n())*100
+    ) -> Nespokojenost
+Nespokojenost
+ggplot(data = Nespokojenost, mapping = aes(x = Bydliste, y = Nespokojenost_perc)) + 
+  geom_bar(stat = "identity", width = 0.5, fill = "red", alpha = 0.4) + 
+  geom_point(size = 3) +
+  geom_errorbar(mapping = aes(ymin=Nespokojenost_perc - Chyba_perc, ymax=Nespokojenost_perc + Chyba_perc), width = 0.2, size = 0.5) +
+  ggtitle("Nespokojenost s bydlením podle současného bydlení") + 
+  xlab("Současné bydlení") + 
+  ylab("Nespokojenost, %")
+```
+
+## Otázky
+Všechno podle bydliště
+- Proč bydlíte, kde bydlíte - důvody podle bydliště
+- Jak dlouho dojíždíte do práce/školy
+- Kde chcete trávit lockdown v závislosti od bydliště
+- Změnil lockdow vás pohled na bydlení
+- Kde trávíte volný čas v závislosti na bydlišti
+- Prečo bývate tam kde bývate podľa spokojnosti
+- Dojazd k lekárovi
+- Čo je dostupné v závislosti 
+-
