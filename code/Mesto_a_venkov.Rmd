@@ -21,7 +21,7 @@ This is an R Markdown document. Markdown is a simple formatting syntax for autho
 When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
 
 ```{r import echo=FALSE}
-Mesto_a_venkov <- read_excel("C:/Users/kvasn/Documents/GitHub/Mesto_a_venkov/data/Mesto_a_venkov.xlsx", 
+Mesto_a_venkov <- read_excel("../data/Mesto_a_venkov.xlsx", 
     col_types = c("date", "skip", "text", 
         "text", "text", "text", "text", "text", 
         "text", "skip", "skip", "text", "text", 
