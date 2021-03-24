@@ -35,11 +35,13 @@ Mesto_a_venkov <- read_excel("../data/Mesto_a_venkov.xlsx",
 Mesto_a_venkov
 ```
 
-## Sumární statistika
+## "Okolí města přiřadíme k venkovu
+Máme tam pouze čtyři případy.
 
-```{r summary, echo=FALSE}
-summary(Mesto_a_venkov)
-````
+```{r bydliste, echo=FALSE}
+Mesto_a_venkov$Bydliste <- as.factor(Mesto_a_venkov$Bydliste)
+levels(Mesto_a_venkov$Bydliste) <- c("Město", "Venkov", "Venkov")
+```
 
 ```{r}
 ggplot(data = Mesto_a_venkov, mapping = aes(x=Pohlavi))+
@@ -80,7 +82,7 @@ Všechno podle bydliště
 - Kde trávíte volný čas v závislosti na bydlišti
 - Prečo bývate tam kde bývate podľa spokojnosti
 - Dojazd k lekárovi
-- Čo je dostupné v závislosti 
+- Čo je dostupné v závislosti od toho, kde bydlíte
 
 ## Nechceš zlúčiť Okolí města a venkov?
 
@@ -112,10 +114,72 @@ Mesto_a_venkov %>%
     Neuvedeno = sum(Neuvedeno),
     Celkem = n()
   ) -> duvody_bydleni
+duvody_bydleni
 Mesto_a_venkov %>%
   ggplot(mapping = aes(x = Proc_bydlite_zde, fill = Spokojenost...7 )) +
   facet_grid(Bydliste~.) +
-  geom_bar()
+  geom_bar() + 
+  ggtitle("Důvody pro současné bydlení") + 
+  xlab("Proč bydlím zde") + 
+  ylab("Počet odpovědí") + 
+  labs(fill="Spokojenost")
 
+```
+## Co je dostupné v závislosti od toho, kde bydlíte
+
+```{r}
+Mesto_a_venkov %>%
+  select(
+    Datum_a_cas,
+    Bydliste,
+    
+  )
+```
+
+## Co je pro vás stěžejní pro výběr bydliště
+
+## Jak dlouho dojíždíte do práce/školy
+
+```{r}
+Mesto_a_venkov %>%
+  select(
+    Datum_a_cas,
+    Bydliste,
+    Volny_cas,
+    Dojezd_prace_jidlo_verbose
+  ) %>%
+  mutate(
+    present = 1
+  ) %>%
+  pivot_wider(
+    names_from = Dojezd_prace_jidlo_verbose,
+    values_from = present,
+    values_fill = 0
+  ) %>%
+  group_by(Bydliste) %>%
+  summarise(
+    `Do 20 minut` = sum(`Do 20 minut`)/n()*100,
+    `30-45 minut` = sum(`30 - 45 minut`)/n()*100,
+    Hodina = (sum(Hodina) + sum(`Více jak hodina`))/n()*100
+  ) -> dojezd_do_prace
+dojezd_do_prace
+Mesto_a_venkov %>%
+  mutate(
+    Dojezd_prace_jidlo_verbose = ifelse(Dojezd_prace_jidlo_verbose=="Více jak hodina", "Hodina", Dojezd_prace_jidlo_verbose),
+    Dojezd_prace_jidlo_verbose = as.factor(Dojezd_prace_jidlo_verbose),
+    Dojezd_prace_jidlo_verbose = relevel(Dojezd_prace_jidlo_verbose, "Do 20 minut")
+  ) %>%
+  ggplot(mapping = aes(x=Dojezd_prace_jidlo_verbose, fill = Dojizdite_do_prace)) +
+  facet_grid(Bydliste~.) +
+  geom_bar()+
+  ggtitle("Únosná doba dojezdu do práce nebo k jídlu") + 
+  xlab("Únosná doba dojezdu") + 
+  ylab("Počet odpovědí") + 
+  labs(fill="Dojíždím 45 min a víc")
+```
+
+## 
+
+```{r}
 
 ```
