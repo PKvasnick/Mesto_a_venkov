@@ -132,7 +132,24 @@ Mesto_a_venkov %>%
   select(
     Datum_a_cas,
     Bydliste,
-    
+    Vzdelavaci_instituce,
+    Zdravotni_pece,
+    Kultura,
+    Moznost_vyberu,
+    Priroda,
+    Dostupnost_blizkych,
+    Prace,
+    Dojizdka,
+    Sluzby,
+    Restaurace
+  ) %>%
+  group_by(
+    Bydliste
+  ) %>%
+  summarise_at(
+    .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
+              "Priroda", "Dostupnost_blizkych", "Prace", "Dojizdka", "Sluzby", "Restaurace"),
+    .funs = ~count(ifelse(.x=="Ano",1,0))/n()*100
   )
 ```
 
@@ -172,7 +189,7 @@ Mesto_a_venkov %>%
   ggplot(mapping = aes(x=Dojezd_prace_jidlo_verbose, fill = Dojizdite_do_prace)) +
   facet_grid(Bydliste~.) +
   geom_bar()+
-  ggtitle("Únosná doba dojezdu do práce nebo k jídlu") + 
+  ggtitle("Únosná doba dojezdu do práce nebo za jídlem") + 
   xlab("Únosná doba dojezdu") + 
   ylab("Počet odpovědí") + 
   labs(fill="Dojíždím 45 min a víc")
@@ -181,5 +198,24 @@ Mesto_a_venkov %>%
 ## 
 
 ```{r}
-
+library(ggalluvial)
+Mesto_a_venkov %>% 
+  arrange(Bydliste, Lockdown_mesto_venkov) %>%
+ggplot(mapping = aes(axis1 = Bydliste, axis2 = Lockdown_mesto_venkov)) +
+  geom_alluvium(aes(fill = Bydliste), width = 1/6) +
+  geom_stratum(width = 1/12, fill = "grey", color = "black", alpha=0.5) +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) + 
+  scale_x_discrete(limits = c("Bydlím", "Chtěl bych bydlet"), expand = c(.05, .05)) +
+  scale_fill_brewer(type = "qual", palette = "Set1") +
+  theme_minimal()
+```
+      
+       aes(y = Freq, axis1 = Gender, axis2 = Dept)) +
+  geom_alluvium(aes(fill = Admit), width = 1/12) +
+  geom_stratum(width = 1/12, fill = "black", color = "grey") +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
+  scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
+  scale_fill_brewer(type = "qual", palette = "Set1") +
+  ggtitle("UC Berkeley admissions and rejections, by sex and department")
+))
 ```
