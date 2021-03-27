@@ -84,8 +84,6 @@ Všechno podle bydliště
 - Dojazd k lekárovi
 - Čo je dostupné v závislosti od toho, kde bydlíte
 
-## Nechceš zlúčiť Okolí města a venkov?
-
 ## Proč bydlíte, kde bydlíte
 Hlavní důvod pro bydlení v současném bydlišti
 
@@ -132,6 +130,7 @@ Mesto_a_venkov %>%
   select(
     Datum_a_cas,
     Bydliste,
+    Spokojenost...7,
     Vzdelavaci_instituce,
     Zdravotni_pece,
     Kultura,
@@ -143,14 +142,41 @@ Mesto_a_venkov %>%
     Sluzby,
     Restaurace
   ) %>%
+  mutate(
+    Donaska = Dojizdka
+  ) %>%
   group_by(
-    Bydliste
+    Bydliste,
+    Spokojenost...7
   ) %>%
   summarise_at(
     .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
-              "Priroda", "Dostupnost_blizkych", "Prace", "Dojizdka", "Sluzby", "Restaurace"),
-    .funs = ~count(ifelse(.x=="Ano",1,0))/n()*100
+              "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
+    .funs = ~sum(.x=="Ano")/n()*100
+  ) %>% 
+  pivot_longer(
+    cols = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
+              "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
+    names_to = "Kategorie",
+    values_to = "Dostupnost"
+  ) %>%
+  ggplot(mapping = aes(x = Kategorie, y = Dostupnost, fill = Spokojenost...7)) + 
+  facet_grid(Bydliste~.)+
+  geom_bar(stat = "identity") +
+  theme(
+    #legend.position = "none",
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+    ) +
+  ggtitle("Důležité faktory pro výběr bydlení v závislosti od současného bydliště") + 
+  xlab("Faktor") + 
+  ylab("Zastoupení, %")
+```
+
+```{r}
+
   )
+
+
 ```
 
 ## Co je pro vás stěžejní pro výběr bydliště
@@ -210,12 +236,4 @@ ggplot(mapping = aes(axis1 = Bydliste, axis2 = Lockdown_mesto_venkov)) +
   theme_minimal()
 ```
       
-       aes(y = Freq, axis1 = Gender, axis2 = Dept)) +
-  geom_alluvium(aes(fill = Admit), width = 1/12) +
-  geom_stratum(width = 1/12, fill = "black", color = "grey") +
-  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
-  scale_x_discrete(limits = c("Gender", "Dept"), expand = c(.05, .05)) +
-  scale_fill_brewer(type = "qual", palette = "Set1") +
-  ggtitle("UC Berkeley admissions and rejections, by sex and department")
-))
-```
+ 
