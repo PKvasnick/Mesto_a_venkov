@@ -75,13 +75,13 @@ ggplot(data = Nespokojenost, mapping = aes(x = Bydliste, y = Nespokojenost_perc)
 
 ## Otázky
 Všechno podle bydliště
-- Proč bydlíte, kde bydlíte - důvody podle bydliště
-- Jak dlouho dojíždíte do práce/školy
-- Kde chcete trávit lockdown v závislosti od bydliště
-- Změnil lockdow vás pohled na bydlení
-- Kde trávíte volný čas v závislosti na bydlišti
-- Prečo bývate tam kde bývate podľa spokojnosti
-- Dojazd k lekárovi
+- Proč bydlíte, kde bydlíte - důvody podle bydliště Máme
+- Jak dlouho dojíždíte do práce/školy Máme
+- Kde chcete trávit lockdown v závislosti od bydliště Máme
+- Změnil lockdow vás pohled na bydlení Netreba
+- Kde trávíte volný čas v závislosti na bydlišti ???
+- Prečo bývate tam kde bývate podľa spokojnosti Máme
+- Dojazd k lekárovi Treba?
 - Čo je dostupné v závislosti od toho, kde bydlíte
 
 ## Proč bydlíte, kde bydlíte
@@ -123,7 +123,7 @@ Mesto_a_venkov %>%
   labs(fill="Spokojenost")
 
 ```
-## Co je dostupné v závislosti od toho, kde bydlíte
+## Co je pro vás stěžejní pro výběr bydliště
 
 ```{r}
 Mesto_a_venkov %>%
@@ -162,15 +162,17 @@ Mesto_a_venkov %>%
   ) %>%
   ggplot(mapping = aes(x = Kategorie, y = Dostupnost, fill = Spokojenost...7)) + 
   facet_grid(Bydliste~.)+
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", position = "dodge", width = 0.5) +
   theme(
     #legend.position = "none",
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
     ) +
   ggtitle("Důležité faktory pro výběr bydlení v závislosti od současného bydliště") + 
   xlab("Faktor") + 
-  ylab("Zastoupení, %")
+  ylab("Zastoupení, %") + 
+  labs(fill = "Spokojenost")
 ```
+Doplniť tabuľku
 
 ```{r}
 
@@ -179,7 +181,6 @@ Mesto_a_venkov %>%
 
 ```
 
-## Co je pro vás stěžejní pro výběr bydliště
 
 ## Jak dlouho dojíždíte do práce/školy
 
@@ -235,5 +236,55 @@ ggplot(mapping = aes(axis1 = Bydliste, axis2 = Lockdown_mesto_venkov)) +
   scale_fill_brewer(type = "qual", palette = "Set1") +
   theme_minimal()
 ```
+  Doplniť tabuľku
       
+## Čo je dostupné v závislosti od toho, kde bydlíte
+  
+```{r}
+dostup_cols = c("Hriste", "Park", "Skola", "Vydejni_okenka", "Cyklostezky", "Vlak", "Autobus", "Posta_Zasilkovna", "Knihovna", "Urad", "Obchod_nezbytne", "Obchod_ostatni", "Dovazka_jidla")
+Mesto_a_venkov %>%
+  select(
+    Bydliste, 
+    Spokojenost...7,
+    Hriste, 
+    Park, 
+    Skola, 
+    Vydejni_okenka, 
+    Cyklostezky, 
+    Vlak, 
+    Autobus, 
+    Posta_Zasilkovna, 
+    Knihovna, 
+    Urad, 
+    Obchod_nezbytne, 
+    Obchod_ostatni, 
+    Dovazka_jidla
+  ) %>%
+  group_by(
+    Bydliste,
+    Spokojenost...7
+  ) %>%
+  summarise_at(
+    .vars = dostup_cols,
+    .funs = ~sum(.x=="Ano")/n()*100
+  ) %>%
+  pivot_longer(
+    cols = dostup_cols,
+    names_to = "Kategorie",
+    values_to = "Zastoupeni"
+  ) %>%
+  ggplot(mapping = aes(x = Kategorie, y = Zastoupeni, fill = Spokojenost...7)) + 
+  facet_grid(Bydliste~.) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.5) + 
+  theme(
+    #legend.position = "none",
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+    ) +
+  ggtitle("Co je dostupné v místě mého bydliště") + 
+  xlab("Vybavenost") + 
+  ylab("Zastoupení, %") + 
+  labs(fill="Spokojenost")
+```
+  
+
  
