@@ -234,9 +234,46 @@ ggplot(mapping = aes(axis1 = Bydliste, axis2 = Lockdown_mesto_venkov)) +
   geom_label(stat = "stratum", aes(label = after_stat(stratum))) + 
   scale_x_discrete(limits = c("Bydlím", "Chtěl bych bydlet"), expand = c(.05, .05)) +
   scale_fill_brewer(type = "qual", palette = "Set1") +
+  ggtitle("Kde bydlím a kde chci trávit lockdown") +
   theme_minimal()
 ```
   Doplniť tabuľku
+  
+```{r}
+Mesto_a_venkov %>%
+  select(
+    Bydliste, Lockdown_mesto_venkov
+    ) %>%
+  group_by(
+    Bydliste
+  ) %>% 
+  summarise(
+    Spolu = n(),
+    Venkov = sum(Lockdown_mesto_venkov == "Venkov"),
+    Mesto = n()-Venkov
+  ) %>% 
+  gt(rowname_col = "Bydliste") %>%
+  tab_header(
+    title = "Preference bydleni",
+    subtitle = "v lockdownu vs. soucasnost"
+  ) %>%
+  tab_stubhead(
+    label = "Kde bydlim ted"
+  ) %>%
+  grand_summary_rows(
+    columns = everything(), 
+    fns = list(Spolu = ~sum(.)),
+    formatter = fmt_number,
+    decimals = 0
+  ) %>%
+  tab_spanner(
+    label = "Kde chci bydlet v lockdownu",
+    columns = c("Mesto", "Venkov")
+  ) %>%
+  cols_move_to_end(columns = "Spolu")
+  
+```
+  
       
 ## Čo je dostupné v závislosti od toho, kde bydlíte
   
@@ -272,7 +309,8 @@ Mesto_a_venkov %>%
     cols = dostup_cols,
     names_to = "Kategorie",
     values_to = "Zastoupeni"
-  ) %>%
+  ) -> dostup_data
+dostup_data %>%
   ggplot(mapping = aes(x = Kategorie, y = Zastoupeni, fill = Spokojenost...7)) + 
   facet_grid(Bydliste~.) + 
   geom_bar(stat = "identity", position = "dodge", width = 0.5) + 
@@ -285,6 +323,52 @@ Mesto_a_venkov %>%
   ylab("Zastoupení, %") + 
   labs(fill="Spokojenost")
 ```
-  
+### Tabulka
+
+Nechcem robiť delenie podľa spokojnosti. Je to neprehľadné a neviem, čo si s tým počať.
+
+
+```{r}
+library(gt)
+Mesto_a_venkov %>%
+  select(
+    Bydliste, dostup_cols
+  ) %>%
+  pivot_longer(
+    cols = dostup_cols,
+    names_to = "Kategorie",
+    values_to = "AnoNe"
+  ) %>% 
+  group_by(
+    Bydliste,
+    Kategorie
+  ) %>%
+  summarise(
+    celkem = n(),
+    ano = sum(AnoNe == "Ano"),
+    percent = ano/celkem
+  ) %>% 
+  ungroup() %>%
+  pivot_wider(
+    names_from = Bydliste,
+    values_from = c(celkem, ano, percent)
+  ) -> dostup_data
+dostup_data %>%
+  gt() %>%
+  tab_header(
+    title = "Dostupna vybavenost",
+    subtitle = "podle soucasneho bydliste"
+  ) %>%
+  tab_spanner_delim(
+    delim = "_", gather = TRUE
+  ) %>%
+  fmt_percent(
+    columns = contains("procent"),
+    decimals = 0
+  )
+```
+
+
+
 
  
