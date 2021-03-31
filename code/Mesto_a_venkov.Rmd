@@ -38,17 +38,52 @@ Mesto_a_venkov
 ## "Okolí města přiřadíme k venkovu
 Máme tam pouze čtyři případy.
 
+## "Pracující/studující v závislosti na věku
+```{r}
+Mesto_a_venkov %>% 
+  select(Povolani, Věk) %>%
+  group_by(Věk) %>%
+  summarise(
+    Celkem = n(),
+    Student = sum(Povolani == "Student"),
+    Pracující = sum(Povolani == "Pracující"),
+    Ostatní = Celkem - Student - Pracující,
+      ) -> tab_pracujuci
+tab_pracujuci
+tab_pracujuci %>%
+  pivot_longer(
+    cols = c(Pracující, Student, Ostatní),
+    names_to = "Kategorie",
+    values_to = "Pocet"
+  )%>%
+  ggplot(aes(x= Věk, y = Pocet, fill = Kategorie ))+
+  geom_bar(position="stack", stat = "identity ")
+```
+
+
 ```{r bydliste, echo=FALSE}
 Mesto_a_venkov$Bydliste <- as.factor(Mesto_a_venkov$Bydliste)
 levels(Mesto_a_venkov$Bydliste) <- c("Město", "Venkov", "Venkov")
 ```
 
 ```{r}
+Mesto_a_venkov %>% 
+  select(Pohlavi) %>%
+  group_by(Pohlavi) %>%
+  summarise(
+    Celkem = n(),
+  )
 ggplot(data = Mesto_a_venkov, mapping = aes(x=Pohlavi))+
   geom_bar()
 ```
 
 ```{r}
+Mesto_a_venkov %>% 
+  select(Věk) %>%
+  group_by(Věk) %>%
+  summarise(
+    Celkem = n(),
+  )
 ggplot(data = Mesto_a_venkov, mapping = aes(x=Vek))+
   geom_bar()
 ```
@@ -174,12 +209,6 @@ Mesto_a_venkov %>%
 ```
 Doplniť tabuľku
 
-```{r}
-
-  )
-
-
-```
 
 
 ## Jak dlouho dojíždíte do práce/školy
@@ -367,7 +396,50 @@ dostup_data %>%
     decimals = 0
   )
 ```
-
+```{r}
+dostup_cols = c("Hriste", "Park", "Skola", "Vydejni_okenka", "Cyklostezky", "Vlak", "Autobus", "Posta_Zasilkovna", "Knihovna", "Urad", "Obchod_nezbytne", "Obchod_ostatni", "Dovazka_jidla")
+Mesto_a_venkov %>%
+  select(
+    Bydliste, 
+    Hriste, 
+    Park, 
+    Skola, 
+    Vydejni_okenka, 
+    Cyklostezky, 
+    Vlak, 
+    Autobus, 
+    Posta_Zasilkovna, 
+    Knihovna, 
+    Urad, 
+    Obchod_nezbytne, 
+    Obchod_ostatni, 
+    Dovazka_jidla
+  ) %>%
+  group_by(
+    Bydliste,
+    
+  ) %>%
+  summarise_at(
+    .vars = dostup_cols,
+    .funs = ~sum(.x=="Ano")/n()*100
+  ) %>%
+  pivot_longer(
+    cols = dostup_cols,
+    names_to = "Kategorie",
+    values_to = "Zastoupeni"
+  ) -> dostup_data
+dostup_data %>%
+  ggplot(mapping = aes(x = Kategorie, y = Zastoupeni)) + 
+  facet_grid(Bydliste~.) + 
+  geom_bar(stat = "identity", position = "dodge", width = 0.5) + 
+  theme(
+    #legend.position = "none",
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+    ) +
+  ggtitle("Co je dostupné v místě mého bydliště") + 
+  xlab("Vybavenost") + 
+  ylab("Zastoupení, %")
+```
 
 
 
