@@ -210,7 +210,7 @@ Mesto_a_venkov %>%
     ) +
   ggtitle("Důležité faktory pro výběr bydlení v závislosti od současného bydliště") + 
   xlab("Faktor") + 
-  ylab("Zastoupení, %") 
+  ylab("Zastoupení") 
 ```
 Doplniť tabuľku
 ```{r}
@@ -448,11 +448,14 @@ dostup_data %>%
     decimals = 0
   )
 ```
+
+
 ```{r}
 dostup_cols = c("Hriste", "Park", "Skola", "Vydejni_okenka", "Cyklostezky", "Vlak", "Autobus", "Posta_Zasilkovna", "Knihovna", "Urad", "Obchod_nezbytne", "Obchod_ostatni", "Dovazka_jidla")
 Mesto_a_venkov %>%
   select(
     Bydliste, 
+    Spokojenost...7,
     Hriste, 
     Park, 
     Skola, 
@@ -469,11 +472,11 @@ Mesto_a_venkov %>%
   ) %>%
   group_by(
     Bydliste,
-    
+    Spokojenost...7
   ) %>%
   summarise_at(
     .vars = dostup_cols,
-    .funs = ~sum(.x=="Ano")/n()*100
+    .funs = ~sum(.x=="Ano")
   ) %>%
   pivot_longer(
     cols = dostup_cols,
@@ -481,18 +484,18 @@ Mesto_a_venkov %>%
     values_to = "Zastoupeni"
   ) -> dostup_data
 dostup_data %>%
-  ggplot(mapping = aes(x = Kategorie, y = Zastoupeni)) + 
+  ggplot(mapping = aes(x = Kategorie, y = Zastoupeni, fill = Spokojenost...7)) + 
   facet_grid(Bydliste~.) + 
-  geom_bar(stat = "identity", position = "dodge", width = 0.5) + 
+  geom_bar(stat = "identity", position = "stack",) + 
   theme(
     #legend.position = "none",
-    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
+    axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,)
     ) +
   ggtitle("Co je dostupné v místě mého bydliště") + 
   xlab("Vybavenost") + 
-  ylab("Zastoupení, %")
+  ylab("Zastoupení") + 
+  labs(fill="Spokojenost")
 ```
-
 
 
  
