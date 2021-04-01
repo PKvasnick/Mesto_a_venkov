@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r libs, echo = FALSE}
 library(tidyverse)
 library(readxl)
+library(gt)
 ```
 
 ## R Markdown
@@ -57,7 +58,7 @@ tab_pracujuci %>%
     values_to = "Pocet"
   )%>%
   ggplot(aes(x= Věk, y = Pocet, fill = Kategorie ))+
-  geom_bar(position="stack", stat = "identity ")
+  geom_bar(position="stack", stat = "identity")
 ```
 
 
@@ -165,7 +166,6 @@ Mesto_a_venkov %>%
   select(
     Datum_a_cas,
     Bydliste,
-    Spokojenost...7,
     Vzdelavaci_instituce,
     Zdravotni_pece,
     Kultura,
@@ -181,13 +181,12 @@ Mesto_a_venkov %>%
     Donaska = Dojizdka
   ) %>%
   group_by(
-    Bydliste,
-    Spokojenost...7
+    Bydliste
   ) %>%
   summarise_at(
     .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
               "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
-    .funs = ~sum(.x=="Ano")/n()*100
+    .funs = ~sum(.x=="Ano")
   ) %>% 
   pivot_longer(
     cols = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
@@ -195,20 +194,48 @@ Mesto_a_venkov %>%
     names_to = "Kategorie",
     values_to = "Dostupnost"
   ) %>%
-  ggplot(mapping = aes(x = Kategorie, y = Dostupnost, fill = Spokojenost...7)) + 
+  ggplot(mapping = aes(x = Kategorie, y = Dostupnost)) + 
   facet_grid(Bydliste~.)+
-  geom_bar(stat = "identity", position = "dodge", width = 0.5) +
+  geom_bar(stat = "identity", position = "stack") +
   theme(
     #legend.position = "none",
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
     ) +
   ggtitle("Důležité faktory pro výběr bydlení v závislosti od současného bydliště") + 
   xlab("Faktor") + 
-  ylab("Zastoupení, %") + 
-  labs(fill = "Spokojenost")
+  ylab("Zastoupení, %") 
 ```
 Doplniť tabuľku
-
+```{r}
+library(gt)
+Mesto_a_venkov %>%
+  select(
+    Datum_a_cas,
+    Bydliste,
+    Vzdelavaci_instituce,
+    Zdravotni_pece,
+    Kultura,
+    Moznost_vyberu,
+    Priroda,
+    Dostupnost_blizkych,
+    Prace,
+    Dojizdka,
+    Sluzby,
+    Restaurace
+  ) %>%
+  mutate(
+    Donaska = Dojizdka
+  ) %>%
+  group_by(
+    Bydliste
+  ) %>% 
+  summarise_at(
+    .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
+              "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
+    .funs = list(XSoucet = ~sum(.x=="Ano"), XProcento = ~sum(.x=="Ano")/n()*100)
+  ) 
+# Sprav najprv pivot_longer, ty kaco!
+```
 
 
 ## Jak dlouho dojíždíte do práce/školy
@@ -358,7 +385,6 @@ Nechcem robiť delenie podľa spokojnosti. Je to neprehľadné a neviem, čo si 
 
 
 ```{r}
-library(gt)
 Mesto_a_venkov %>%
   select(
     Bydliste, dostup_cols
@@ -375,12 +401,12 @@ Mesto_a_venkov %>%
   summarise(
     celkem = n(),
     ano = sum(AnoNe == "Ano"),
-    percent = ano/celkem
+    procent = ano/celkem
   ) %>% 
   ungroup() %>%
   pivot_wider(
     names_from = Bydliste,
-    values_from = c(celkem, ano, percent)
+    values_from = c(celkem, ano, procent)
   ) -> dostup_data
 dostup_data %>%
   gt() %>%
