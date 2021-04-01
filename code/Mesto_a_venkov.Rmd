@@ -183,20 +183,27 @@ Mesto_a_venkov %>%
   group_by(
     Bydliste
   ) %>%
-  summarise_at(
-    .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
-              "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
-    .funs = ~sum(.x=="Ano")
+  mutate(
+    Celkem_skupina = n()
   ) %>% 
+  ungroup() %>%
   pivot_longer(
     cols = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
               "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
     names_to = "Kategorie",
-    values_to = "Dostupnost"
+    values_to = "AnoNe"
   ) %>%
-  ggplot(mapping = aes(x = Kategorie, y = Dostupnost)) + 
+  group_by(
+    Bydliste,
+    Kategorie
+  ) %>%
+  summarise(
+    pocet = sum(AnoNe == "Ano"),
+    procento = pocet / min(Celkem_skupina) * 100
+  ) %>%
+  ggplot(mapping = aes(x = Kategorie, y = procento)) + 
   facet_grid(Bydliste~.)+
-  geom_bar(stat = "identity", position = "stack") +
+  geom_bar(stat = "identity") +
   theme(
     #legend.position = "none",
     axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)
@@ -226,14 +233,33 @@ Mesto_a_venkov %>%
   mutate(
     Donaska = Dojizdka
   ) %>%
+  select(
+    -Dojizdka
+  ) %>%
   group_by(
     Bydliste
   ) %>% 
-  summarise_at(
-    .vars = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
+  mutate(
+    Celkem_skupina = n()
+  ) %>% 
+  ungroup() %>%
+  pivot_longer(
+    cols = c("Vzdelavaci_instituce", "Zdravotni_pece", "Kultura", "Moznost_vyberu",
               "Priroda", "Dostupnost_blizkych", "Prace", "Donaska", "Sluzby", "Restaurace"),
-    .funs = list(XSoucet = ~sum(.x=="Ano"), XProcento = ~sum(.x=="Ano")/n()*100)
-  ) 
+    names_to = "Kategorie",
+    values_to = "AnoNe"
+  ) %>%
+  group_by(
+    Bydliste,
+    Kategorie
+  ) %>%
+  summarise(
+    pocet = sum(AnoNe == "Ano"),
+    procento = sum(AnoNe == "Ano")/min(Celkem_skupina) * 100,
+  )
+```
+
+
 # Sprav najprv pivot_longer, ty kaco!
 ```
 
