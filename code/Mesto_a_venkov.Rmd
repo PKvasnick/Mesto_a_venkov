@@ -256,10 +256,33 @@ Mesto_a_venkov %>%
   summarise(
     pocet = sum(AnoNe == "Ano"),
     procento = sum(AnoNe == "Ano")/min(Celkem_skupina) * 100,
+  ) %>%
+  pivot_wider(
+    names_from = Bydliste,
+    values_from = c(pocet, procento)
+  ) %>%
+  gt(rowname_col = "Kategorie") %>%
+  tab_header(
+    title = "Dulezite faktory pro vyber bydleni",
+    subtitle = "v zavislosti od soucasneho bydleni"
+  ) %>%
+  tab_stubhead(
+    label = "Faktor"
+  ) %>%
+  tab_spanner_delim(
+    delim = "_",
+    gather = TRUE
+  ) %>%
+  fmt_percent(
+    columns = c("procento_Mesto", "procento_Venkov"),
+    decimals = 0,
+    scale_values = FALSE
   )
+
+<<<<<<< HEAD
+=======
 ```
-
-
+>>>>>>> f755240eb637478e1701b138d277608cd961c2d8
 
 ## Jak dlouho dojíždíte do práce/školy
 
@@ -286,6 +309,9 @@ Mesto_a_venkov %>%
     Hodina = (sum(Hodina) + sum(`Více jak hodina`))/n()*100
   ) -> dojezd_do_prace
 dojezd_do_prace
+```
+
+```{r}
 Mesto_a_venkov %>%
   mutate(
     Dojezd_prace_jidlo_verbose = ifelse(Dojezd_prace_jidlo_verbose=="Více jak hodina", "Hodina", Dojezd_prace_jidlo_verbose),
@@ -293,15 +319,76 @@ Mesto_a_venkov %>%
     Dojezd_prace_jidlo_verbose = relevel(Dojezd_prace_jidlo_verbose, "Do 20 minut")
   ) %>%
   ggplot(mapping = aes(x=Dojezd_prace_jidlo_verbose, fill = Dojizdite_do_prace)) +
-  facet_grid(Bydliste~.) +
+  facet_grid(Bydliste~Dojizdite_do_prace) +
   geom_bar()+
   ggtitle("Únosná doba dojezdu do práce nebo za jídlem") + 
   xlab("Únosná doba dojezdu") + 
   ylab("Počet odpovědí") + 
   labs(fill="Dojíždím 45 min a víc")
 ```
+```{r}
+Mesto_a_venkov %>%
+  mutate(
+    Dojizdite = Dojizdite_do_prace,
+    Dojezd = Dojezd_prace_jidlo_verbose
+  ) %>%
+  select(
+    Datum_a_cas,
+    Bydliste,
+    Dojizdite,
+    Dojezd
+  ) %>%
+  mutate(
+    Dojezd = ifelse(Dojezd =="Více jak hodina", "Hodina", Dojezd),
+    Dojezd = as.factor(Dojezd),
+    Dojezd = relevel(Dojezd, "Do 20 minut"),
+    Dojizdite = ifelse(Dojizdite=="Ano", "Dojizdim", "Nedojizdim")
+  ) %>%
+  group_by(
+    Bydliste,
+    Dojizdite
+  ) %>%
+  mutate(
+    celkem = n()
+  ) %>%
+  ungroup() %>%
+  group_by(
+    Bydliste,
+    Dojizdite,
+    Dojezd
+  ) %>%
+  summarise(
+    pocet = n(),
+    procento = n()/min(celkem)*100
+  ) %>%
+  pivot_wider(
+    names_from = Dojezd,
+    values_from = c(pocet, procento),
+    values_fill = 0
+  ) %>%
+  relocate(
+    `procento_Do 20 minut`,
+    .before = `procento_30 - 45 minut`
+  ) %>%
+  relocate(
+    `pocet_Do 20 minut`,
+    .before = `pocet_30 - 45 minut`
+  ) %>%
+  gt(rowname_col = "Dojizdite", groupname_col = "Bydliste") %>%
+  tab_header(
+    title = "Unosna doba dojizdeni do prace / za jidlem",
+    subtitle = "podle bydliste a dojizdeni za praci"
+  ) %>%
+  tab_spanner_delim(
+    delim = "_", gather = TRUE
+  ) %>%
+  fmt_percent(
+    columns = starts_with("procento"),
+    decimals = 0,
+    scale_values = FALSE
+  )
+```
 
-## 
 
 ```{r}
 library(ggalluvial)
