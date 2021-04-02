@@ -436,6 +436,66 @@ Mesto_a_venkov %>%
   cols_move_to_end(columns = "Spolu")
   
 ```
+## Postup na kopírovanie tabuliek:
+Vpravo hore od tabuľky, krajná ikona (pero) "Show in New Window".
+Win-Shift-S Screen copy
+Všetko ostatné je oveľa komplikonvanejšie.
+
+## Sumárna tabuľka
+
+```{r}
+Mesto_a_venkov %>% 
+  select(
+    Datum_a_cas,
+    Vek,
+    Bydliste,
+    Pohlavi
+  ) %>% 
+  mutate(
+    Pohlavi = ifelse(Pohlavi == "Muž", "Muz", ifelse(Pohlavi == "Žena", "Zena", "Nechci sdelovat"))
+  ) %>%
+  group_by(
+    Bydliste,
+    Vek
+  ) %>%
+  mutate(
+    Pocet_celkem = n()
+  ) %>%
+  ungroup() %>%
+  group_by(
+    Vek, Bydliste, Pohlavi
+  ) %>%
+  summarise(
+    Pocet = n(),
+    Celkem = min(Pocet_celkem)
+  ) %>% 
+  pivot_wider(
+    names_from = Pohlavi,
+    values_from = Pocet,
+    values_fill = 0
+  ) %>%
+  pivot_wider(
+    names_from=Bydliste,
+    values_from=c(Celkem, Muz, Zena, `Nechci sdelovat`),
+    values_fill = 0           
+  ) %>%
+  gt(rowname_col="Vek", groupname_col = NULL) %>%
+  tab_header(
+    title = "Statistika vzorky respondentu",
+    subtitle = "Vek, bydliste, pohlav"
+  ) %>%
+  tab_stubhead(
+    label = "Vekova skupina"
+    ) %>%
+  tab_spanner_delim(
+    delim = "_", gather = TRUE
+  )
+
+```
+
+
+
+
   
       
 ## Čo je dostupné v závislosti od toho, kde bydlíte
@@ -566,7 +626,7 @@ Mesto_a_venkov %>%
   ) -> dostup_data
 dostup_data %>%
   ggplot(mapping = aes(x = Kategorie, y = Zastoupeni, fill = Spokojenost...7)) + 
-  facet_grid(Bydliste~.) + 
+  facet_grid(Bydliste~Spokojenost...7) + 
   geom_bar(stat = "identity", position = "stack",) + 
   theme(
     #legend.position = "none",
