@@ -210,11 +210,11 @@ Mesto_a_venkov %>%
     ) +
   ggtitle("Důležité faktory pro výběr bydlení v závislosti od současného bydliště") + 
   xlab("Faktor") + 
-  ylab("Zastoupení") 
+  ylab("Zastoupení, %") 
 ```
 Doplniť tabuľku
 ```{r}
-library(gt)
+
 Mesto_a_venkov %>%
   select(
     Datum_a_cas,
@@ -279,7 +279,10 @@ Mesto_a_venkov %>%
     scale_values = FALSE
   )
 
+<<<<<<< HEAD
+=======
 ```
+>>>>>>> f755240eb637478e1701b138d277608cd961c2d8
 
 ## Jak dlouho dojíždíte do práce/školy
 
@@ -637,6 +640,7 @@ dostup_data %>%
   ylab("Zastoupení") + 
   labs(fill="Spokojenost")
 ```
+
 
 
  
